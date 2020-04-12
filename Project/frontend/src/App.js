@@ -21,6 +21,8 @@ function App() {
    });
 
    const project = response.data;
+   console.log(project);
+   
    setProjects([...projects, project]);
   }
   return  (
