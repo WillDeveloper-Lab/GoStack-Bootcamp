@@ -3,8 +3,10 @@ import { FiLogIn, FiMail, FiLock } from 'react-icons/fi';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import * as Yup from 'yup';
+import { Link } from 'react-router-dom';
 
-import { useAuth } from '../../hooks/AuthContext';
+import { useAuth } from '../../hooks/auth';
+import { useToast } from '../../hooks/toast';
 import getValidationErrors from '../../utils/getValidationErros';
 import logoImg from '../../assets/logo.svg';
 import { Container, Content, Background } from './styles';
@@ -20,6 +22,7 @@ interface SignInFromData {
 const SingIn: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const { singIn } = useAuth();
+  const { addToast } = useToast();
 
   const handleSubmit = useCallback(
     async (data: SignInFromData) => {
@@ -36,7 +39,7 @@ const SingIn: React.FC = () => {
           abortEarly: false,
         });
 
-        singIn({
+        await singIn({
           email: data.email,
           password: data.password,
         });
@@ -45,10 +48,14 @@ const SingIn: React.FC = () => {
           const errors = getValidationErrors(err);
           formRef.current?.setErrors(errors);
         }
-        // disparar um toast
+        addToast({
+          type: 'error',
+          title: 'Erro na autenticação',
+          description: 'Ocorreu um erro ao fazer login, cheque as credenciais.',
+        });
       }
     },
-    [singIn],
+    [singIn, addToast],
   );
   return (
     <Container>
@@ -69,10 +76,10 @@ const SingIn: React.FC = () => {
           <a href="forgot">Esqueci minha senha</a>
         </Form>
 
-        <a href="ttrtr">
+        <Link to="/singup">
           <FiLogIn />
           Criar conta
-        </a>
+        </Link>
       </Content>
       <Background />
     </Container>
