@@ -14,6 +14,8 @@ import Icon from 'react-native-vector-icons/Feather';
 import { Form } from '@unform/mobile';
 import { FormHandles } from '@unform/core';
 
+import { useAuth } from '../../hooks/auth';
+
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 
@@ -39,38 +41,43 @@ const SingIn: React.FC = () => {
   const passwordInputRef = useRef<TextInput>(null);
   const navigation = useNavigation();
 
-  const handleSingIn = useCallback(async (data: SignInFromData) => {
-    try {
-      formRef.current?.setErrors({});
-      const schema = Yup.object().shape({
-        email: Yup.string()
-          .required('Email obrigatório')
-          .email('Digite um email valido'),
-        password: Yup.string().required('Senha obrigatória'),
-      });
+  const { singIn } = useAuth();
 
-      await schema.validate(data, {
-        abortEarly: false,
-      });
+  const handleSingIn = useCallback(
+    async (data: SignInFromData) => {
+      try {
+        formRef.current?.setErrors({});
+        const schema = Yup.object().shape({
+          email: Yup.string()
+            .required('Email obrigatório')
+            .email('Digite um email valido'),
+          password: Yup.string().required('Senha obrigatória'),
+        });
 
-      // await singIn({
-      // email: data.email,
-      // password: data.password,
-      // });
-    } catch (err) {
-      if (err instanceof Yup.ValidationError) {
-        const errors = getValidationErrors(err);
-        formRef.current?.setErrors(errors);
+        await schema.validate(data, {
+          abortEarly: false,
+        });
 
-        return;
+        await singIn({
+          email: data.email,
+          password: data.password,
+        });
+      } catch (err) {
+        if (err instanceof Yup.ValidationError) {
+          const errors = getValidationErrors(err);
+          formRef.current?.setErrors(errors);
+
+          return;
+        }
+
+        Alert.alert(
+          'Erro na autenticação',
+          'Ocorreu um erro ao fazer login, cheque as credenciais.',
+        );
       }
-
-      Alert.alert(
-        'Erro na autenticação',
-        'Ocorreu um erro ao fazer login, cheque as credenciais.',
-      );
-    }
-  }, []);
+    },
+    [singIn],
+  );
   return (
     <>
       <KeyboardAvoidingView
